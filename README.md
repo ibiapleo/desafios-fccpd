@@ -8,6 +8,7 @@ Soluções para os desafios de containerização e microsserviços da disciplina
 - **[Desafio 2](./desafio2)** — Volumes e Persistência
 - **[Desafio 3](./desafio3)** — Docker Compose Orquestrando Serviços
 - **[Desafio 4](./desafio4)** — Microsserviços Independentes
+- **[Desafio 5](./desafio5)** — Microsserviços com API Gateway
 
 ## 📚 Documentação
 
