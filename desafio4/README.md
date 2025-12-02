@@ -24,9 +24,9 @@ Este projeto demonstra a comunicação entre dois microsserviços independentes 
 │   (testes)      │
 └────────┬────────┘
          │
-    ┌────┴──────┬──────────────┐
-    │           │              │
-    ▼           ▼              ▼
+    ┌────┴────────────┐
+    │                 │
+    ▼                 ▼
 ┌────────────┐  ┌──────────────┐
 │ Serviço A  │  │ Serviço B    │
 │ (5001)     │  │ (5002)       │
