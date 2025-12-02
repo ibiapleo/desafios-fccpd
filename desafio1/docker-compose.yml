@@ -1,0 +1,26 @@
+services:
+  servidor-web:
+    build:
+      context: .
+      dockerfile: Dockerfile.servidor
+    container_name: servidor-web
+    ports:
+      - "8080:8080"
+    networks:
+      - rede-comunicacao
+    restart: unless-stopped
+
+  cliente:
+    build:
+      context: .
+      dockerfile: Dockerfile.cliente
+    container_name: cliente-requisicoes
+    depends_on:
+      - servidor-web
+    networks:
+      - rede-comunicacao
+    restart: unless-stopped
+
+networks:
+  rede-comunicacao:
+    driver: bridge

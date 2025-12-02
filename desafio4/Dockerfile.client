@@ -1,0 +1,7 @@
+FROM curlimages/curl:8.4.0
+
+WORKDIR /app
+
+COPY client/test_microsservicos.sh .
+
+CMD ["sh", "test_microsservicos.sh"]

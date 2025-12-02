@@ -1,0 +1,55 @@
+services:
+  servico-a:
+    build:
+      context: .
+      dockerfile: Dockerfile.servico-a
+    container_name: servico-a-usuarios
+    ports:
+      - "5001:5001"
+    networks:
+      - rede-microsservicos
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    environment:
+      FLASK_APP: app.py
+
+  servico-b:
+    build:
+      context: .
+      dockerfile: Dockerfile.servico-b
+    container_name: servico-b-analise
+    ports:
+      - "5002:5002"
+    depends_on:
+      servico-a:
+        condition: service_healthy
+    networks:
+      - rede-microsservicos
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5002/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    environment:
+      FLASK_APP: app.py
+
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    container_name: client-teste-microsservicos
+    depends_on:
+      servico-b:
+        condition: service_healthy
+    networks:
+      - rede-microsservicos
+    restart: unless-stopped
+
+networks:
+  rede-microsservicos:
+    driver: bridge
