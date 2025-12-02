@@ -11,7 +11,6 @@ CREATE TABLE IF NOT EXISTS logs (
     data_log TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Dados iniciais
 INSERT INTO usuarios (nome, email) VALUES
 ('João Silva', 'joao@example.com'),
 ('Maria Santos', 'maria@example.com'),

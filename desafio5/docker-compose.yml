@@ -1,0 +1,73 @@
+services:
+  usuarios-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.usuarios
+    container_name: usuarios-service
+    ports:
+      - "5001:5001"
+    networks:
+      - gateway-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health", "||", "exit", "1"]
+      interval: 3s
+      timeout: 2s
+      retries: 15
+      start_period: 30s
+    environment:
+      FLASK_APP: app.py
+
+  pedidos-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.pedidos
+    container_name: pedidos-service
+    ports:
+      - "5002:5002"
+    networks:
+      - gateway-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5002/health", "||", "exit", "1"]
+      interval: 3s
+      timeout: 2s
+      retries: 15
+      start_period: 30s
+    environment:
+      FLASK_APP: app.py
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway
+    container_name: api-gateway
+    ports:
+      - "5000:5000"
+    depends_on:
+      - usuarios-service
+      - pedidos-service
+    networks:
+      - gateway-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health", "||", "exit", "1"]
+      interval: 3s
+      timeout: 2s
+      retries: 15
+      start_period: 30s
+    environment:
+      FLASK_APP: app.py
+      USUARIOS_SERVICE_URL: http://usuarios-service:5001
+      PEDIDOS_SERVICE_URL: http://pedidos-service:5002
+
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    container_name: client-gateway-test
+    depends_on:
+      - api-gateway
+    networks:
+      - gateway-network
+
+networks:
+  gateway-network:
+    driver: bridge

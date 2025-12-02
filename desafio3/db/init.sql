@@ -6,7 +6,6 @@ CREATE TABLE IF NOT EXISTS posts (
     data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Dados iniciais
 INSERT INTO posts (titulo, conteudo, autor) VALUES
 ('Bem-vindo ao Blog', 'Este é o primeiro post do nosso blog. Bem-vindo!', 'Admin'),
 ('Docker Compose', 'Docker Compose é uma ferramenta para definir e executar aplicações multi-container.', 'Desenvolvedor'),

@@ -1,6 +1,5 @@
 from flask import Flask, jsonify, request
 from datetime import datetime, timedelta
-import random
 
 app = Flask(__name__)
 
@@ -36,7 +35,7 @@ USUARIOS = [
         "email": "david@email.com",
         "ativo": True,
         "data_cadastro": (datetime.now() - timedelta(days=30)).isoformat(),
-        "perfil": "editor"
+        "perfil": "vendedor"
     },
     {
         "id": 5,
@@ -44,16 +43,16 @@ USUARIOS = [
         "email": "eva@email.com",
         "ativo": True,
         "data_cadastro": (datetime.now() - timedelta(days=7)).isoformat(),
-        "perfil": "leitor"
+        "perfil": "cliente"
     }
 ]
 
 @app.route('/health', methods=['GET'])
 def health():
-    """Health check do serviço A"""
+    """Health check do microsserviço de usuários"""
     return jsonify({
         "status": "healthy",
-        "servico": "Serviço A - Gerenciamento de Usuários",
+        "servico": "Microsserviço de Usuários",
         "timestamp": datetime.now().isoformat()
     }), 200
 
@@ -63,7 +62,7 @@ def listar_usuarios():
     Lista todos os usuários
     Query params opcionais:
     - ativo: true/false (filtrar por status)
-    - perfil: administrador/editor/leitor (filtrar por perfil)
+    - perfil: administrador/editor/leitor/vendedor/cliente (filtrar por perfil)
     """
     try:
         usuarios = USUARIOS.copy()
@@ -75,7 +74,7 @@ def listar_usuarios():
         
         perfil = request.args.get('perfil')
         if perfil:
-            usuarios = [u for u in usuarios if u['perfil'] == perfil]
+            usuarios = [u for u in usuarios if u['perfil'].lower() == perfil.lower()]
         
         return jsonify({
             "total": len(usuarios),
@@ -106,17 +105,21 @@ def criar_usuario():
     try:
         dados = request.get_json()
         
-        if not dados.get('nome') or not dados.get('email'):
+        if not dados or 'nome' not in dados or 'email' not in dados:
             return jsonify({"erro": "Nome e email são obrigatórios"}), 400
         
-        novo_id = max(u['id'] for u in USUARIOS) + 1
+        if any(u['email'] == dados['email'] for u in USUARIOS):
+            return jsonify({"erro": "Email já cadastrado"}), 409
+        
+        novo_id = max([u['id'] for u in USUARIOS]) + 1
+        
         novo_usuario = {
             "id": novo_id,
-            "nome": dados.get('nome'),
-            "email": dados.get('email'),
+            "nome": dados['nome'],
+            "email": dados['email'],
             "ativo": dados.get('ativo', True),
             "data_cadastro": datetime.now().isoformat(),
-            "perfil": dados.get('perfil', 'leitor')
+            "perfil": dados.get('perfil', 'cliente')
         }
         
         USUARIOS.append(novo_usuario)
@@ -142,6 +145,8 @@ def atualizar_usuario(usuario_id):
         if 'nome' in dados:
             usuario['nome'] = dados['nome']
         if 'email' in dados:
+            if any(u['id'] != usuario_id and u['email'] == dados['email'] for u in USUARIOS):
+                return jsonify({"erro": "Email já cadastrado"}), 409
             usuario['email'] = dados['email']
         if 'ativo' in dados:
             usuario['ativo'] = dados['ativo']
@@ -174,24 +179,28 @@ def deletar_usuario(usuario_id):
         return jsonify({"erro": str(e)}), 500
 
 @app.route('/api/usuarios/estatisticas/resumo', methods=['GET'])
-def estatisticas():
-    """Retorna estatísticas dos usuários"""
-    total = len(USUARIOS)
-    ativos = len([u for u in USUARIOS if u['ativo']])
-    inativos = total - ativos
-    
-    perfis = {}
-    for u in USUARIOS:
-        perfil = u['perfil']
-        perfis[perfil] = perfis.get(perfil, 0) + 1
-    
-    return jsonify({
-        "total_usuarios": total,
-        "ativos": ativos,
-        "inativos": inativos,
-        "por_perfil": perfis,
-        "timestamp": datetime.now().isoformat()
-    }), 200
+def estatisticas_usuarios():
+    """Retorna estatísticas sobre os usuários"""
+    try:
+        total = len(USUARIOS)
+        ativos = len([u for u in USUARIOS if u['ativo']])
+        inativos = total - ativos
+        
+        perfis = {}
+        for usuario in USUARIOS:
+            perfil = usuario['perfil']
+            perfis[perfil] = perfis.get(perfil, 0) + 1
+        
+        return jsonify({
+            "total_usuarios": total,
+            "usuarios_ativos": ativos,
+            "usuarios_inativos": inativos,
+            "percentual_ativos": round((ativos / total * 100) if total > 0 else 0, 2),
+            "distribuicao_perfil": perfis,
+            "timestamp": datetime.now().isoformat()
+        }), 200
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=False)

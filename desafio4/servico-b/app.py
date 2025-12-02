@@ -5,7 +5,6 @@ import time
 
 app = Flask(__name__)
 
-# Configuração do serviço A
 SERVICO_A_URL = "http://servico-a:5001"
 
 def obter_usuarios_servico_a():
@@ -47,7 +46,6 @@ def obter_estatisticas_servico_a():
 @app.route('/health', methods=['GET'])
 def health():
     """Health check do serviço B"""
-    # Verificar se consegue conectar ao Serviço A
     try:
         resposta = requests.get(f"{SERVICO_A_URL}/health", timeout=2)
         servico_a_status = "disponível" if resposta.status_code == 200 else "indisponível"
@@ -78,7 +76,6 @@ def usuarios_formatados():
         
         usuarios = dados.get('usuarios', [])
         
-        # Formatar dados
         usuarios_formatados = []
         for u in usuarios:
             data_cadastro = datetime.fromisoformat(u['data_cadastro'])
@@ -121,11 +118,9 @@ def usuarios_relatorio():
         usuarios = dados_usuarios.get('usuarios', [])
         stats = dados_stats
         
-        # Separar por status
         ativos = [u for u in usuarios if u['ativo']]
         inativos = [u for u in usuarios if not u['ativo']]
         
-        # Formatar usuários ativos
         ativos_formatados = []
         for u in ativos:
             data_cadastro = datetime.fromisoformat(u['data_cadastro'])
@@ -137,7 +132,6 @@ def usuarios_relatorio():
                 "ativo_a_dias": dias
             })
         
-        # Formatar usuários inativos
         inativos_formatados = []
         for u in inativos:
             inativos_formatados.append({

@@ -4,11 +4,10 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
-COPY servico-b/requirements.txt .
+COPY pedidos/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN pip install -r requirements.txt
-
-COPY servico-b/app.py .
+COPY pedidos/app.py .
 
 EXPOSE 5002
 
